@@ -1,152 +1,142 @@
 import os
+import uuid
+import requests
+from PIL import Image
+from io import BytesIO
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
-# 获取当前文件的路径
+
+# 获取当前文件的路径和目录
 current_file = os.path.abspath(__file__)
-
-# 获取当前文件所在的目录
 current_directory = os.path.dirname(current_file)
-
-# 设置当前工作目录
 os.chdir(current_directory)
 
-# 打印当前工作目录
-print("当前工作目录:", os.getcwd())
-dir = r'C:\Users\Administrator\AppData\Local\Google\Chrome\User Data'
-# 配置 ChromeOptions
+# 确保img目录存在
+if not os.path.exists('img'):
+    os.makedirs('img')
+
+# 浏览器配置
+chrome_driver_path = r'C:\Users\Administrator\AppData\Local\Google\Chrome\User Data'
 chrome_options = Options()
-chrome_options.add_argument(f"--user-data-dir={dir}")  # 替换为你的用户数据目录路径
-chrome_options.add_argument("--profile-directory=Default")  # 使用默认配置文件，如果需要其他配置文件可以修改
-# 创建 Chrome 浏览器实例
-service = Service(dir)
+chrome_options.add_argument(f"--user-data-dir={chrome_driver_path}")
+chrome_options.add_argument("--profile-directory=Default")
+
+# 创建Chrome浏览器实例
+service = Service(r"D:\my\xhs-export\chromedriver.exe")
 browser = webdriver.Chrome(service=service, options=chrome_options)
 
-# 打开网页
-driver.get("https://www.google.com")
-
-
 def getAllArticle():
-    # option.binary_location = r"C:\Program Files\Google\Chrome\Application/google.exe"  # binary_location属性指定Chrome启动文件
-    # browser = webdriver.Chrome(option)
-    browser.get(
-        'https://www.xiaohongshu.com/user/profile/563eaf6d9eb578045ba942b7')
-
-# 定义一个集合用来存储链接
-# 未登录，只能看到过去30篇笔记
+    browser.get('https://www.xiaohongshu.com/user/profile/563eaf6d9eb578045ba942b7')
     links_set = set()
-
-    # 找到 id 为 "userPostedFeeds" 的元素
-    user_posted_feeds = browser.find_element(By.ID, "userPostedFeeds")
-
- # 等待页面加载完成
-    browser.implicitly_wait(100)
-
-    # 滚动到页面底部，并获取链接
-    for i in range(40):
-        # 找到所有以 "/explore" 开头的链接
-        wait = WebDriverWait(browser, 10)
-        links = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "a[href^='/user/profile']")))
-
-        # 将链接添加到集合中
-        for link in links:
-            try:
-                links_set.add(link.get_attribute("href"))
-            except:
-                pass
-
-        # 执行滚动操作
-        browser.execute_script(
-            "window.scrollTo(0, document.body.scrollHeight);")
-
-        # 等待页面加载完成
-        browser.implicitly_wait(10)
-
-        # 如果已经滚动到了页面底部，退出循环
-        if browser.execute_script("return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;"):
-            break
-
-        # 重新获取 id 为 "userPostedFeeds" 的元素
-        user_posted_feeds = browser.find_element(By.ID, "userPostedFeeds")
-
-    # https://www.xiaohongshu.com/explore/652b48b7000000001f03bed6?xsec_token=ABmeeILZLA2Kz4cDESXC3P9reVGrRWwE1cDWzrkuQmb-M=&xsec_source=pc_user
-    # 输出去重后的链接
-    for link in links_set:
-        print(link)
-
+    
+    try:
+        # 等待用户Feed加载
+        WebDriverWait(browser, 20).until(
+            EC.presence_of_element_located((By.ID, "userPostedFeeds"))
+        )
+        
+        # 滚动加载更多内容
+        for i in range(40):
+            # 等待链接加载
+            wait = WebDriverWait(browser, 10)
+            # 使用精确的选择器匹配文章链接
+            links = wait.until(EC.presence_of_all_elements_located(
+                (By.CSS_SELECTOR, "a.cover.ld.mask[href*='/user/profile/'][target='_self']")
+            ))
+            
+            # 收集链接
+            for link in links:
+                try:
+                    href = link.get_attribute("href")
+                    if href and '/user/profile/' in href:
+                        links_set.add(href)
+                except Exception as e:
+                    print(f"处理链接时出错: {str(e)}")
+                    continue
+            
+            # 滚动到底部
+            browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            browser.implicitly_wait(2)
+            
+            # 检查是否到达底部
+            if browser.execute_script("return window.pageYOffset + window.innerHeight >= document.body.scrollHeight;"):
+                break
+                
+    except Exception as e:
+        print(f"获取文章列表时出错: {str(e)}")
+    
+    # 输出所有获取到的链接
+    print("\n获取到的所有文章链接:")
+    for link in sorted(links_set):
+        print(f"- {link}")
+    
+    print(f"\n共获取到 {len(links_set)} 篇文章")
     return links_set
 
-
 def downForArticle(url):
-    # 创建Chrome浏览器对象
-    # 加载指定的页面
-    # 打开页面
-    browser.get(url)
-
-    # 设置隐式等待时间为10秒(第一次时等待10s)
-    browser.implicitly_wait(10)
-
-    # 找到 class 为 "note-content" 的元素
-    note_content = browser.find_elements(By.CSS_SELECTOR, '.note-content')[0]
-
-    # 找到 class 为 "title" 和 "desc" 的子元素
-    titles = note_content.find_elements(By.CSS_SELECTOR, ".title")
-    descs = note_content.find_elements(By.CSS_SELECTOR, ".desc")
-
-    import requests
-    from PIL import Image
-    from io import BytesIO
-
-    # 找到 class 为 "note-content" 的元素
-    # 使用 CSS 选择器查找所有包含 'xhscdn' 的 img 元素
-    images = browser.find_elements(By.CSS_SELECTOR, "img[src*='sns-webpic-qc.xhscdn.com']")
-
-    # 使用正则表达式提取内容
-    # 打印每个图片的 src 属性
-    result = []
-    for img in images:
-        result.append(img.get_attribute("src"))
-
-    # 输出提取的内容
-    s = ""
-    result = set(result)
-    for url in result:
-        # 发送 GET 请求获取图片数据
-        response = requests.get(url)
-
-        # 检查响应状态码
-        if response.status_code == 200:
-            # 创建 Image 对象
-            image = Image.open(BytesIO(response.content))
-
-            # 转换为 JPG 格式
-            image = image.convert("RGB")
-
-            # 获取文件名
-            import uuid
-            file_name = 'img/' + str(uuid.uuid4()) + ".jpg"
-
-            s += f"![]({file_name})\n"
-            # 保存图片到本地
-            image.save(file_name)
-            print("图片保存成功！")
-        else:
-            print("图片下载失败！")
-
-    # 构造 Markdown 格式的字符串
-    markdown = f"# {titles[0].text}\n\n {s} \n{descs[0].text}"
-    # 将字符串写入同目录下的 Markdown 文件
-    with open(f"{titles[0].text}.md", "w", encoding="utf-8") as f:
-        f.write(markdown)
-
-
-li = getAllArticle()
-# pass
-for i in list(li):
     try:
-        downForArticle(i)
-    except:
-        pass
+        browser.get(url)
+        
+        # 等待内容加载
+        wait = WebDriverWait(browser, 20)
+        note_content = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '.note-content')))
+        
+        # 获取标题和描述
+        title = note_content.find_element(By.CSS_SELECTOR, ".title").text
+        desc = note_content.find_element(By.CSS_SELECTOR, ".desc").text
+        
+        # 获取图片
+        images = browser.find_elements(By.CSS_SELECTOR, "img[src*='sns-webpic-qc.xhscdn.com']")
+        image_markdown = ""
+        
+        # 下载并保存图片
+        for img in images:
+            try:
+                img_url = img.get_attribute("src")
+                if not img_url:
+                    continue
+                    
+                response = requests.get(img_url)
+                if response.status_code == 200:
+                    image = Image.open(BytesIO(response.content))
+                    image = image.convert("RGB")
+                    file_name = f'img/{uuid.uuid4()}.jpg'
+                    image.save(file_name)
+                    image_markdown += f"![]({file_name})\n"
+                    print(f"图片保存成功: {file_name}")
+            except Exception as e:
+                print(f"处理图片时出错: {str(e)}")
+                continue
+        
+        # 生成markdown内容
+        markdown = f"# {title}\n\n{image_markdown}\n{desc}"
+        
+        # 保存markdown文件
+        safe_title = "".join(x for x in title if x.isalnum() or x in (' ', '-', '_'))[:50]
+        with open(f"{safe_title}.md", "w", encoding="utf-8") as f:
+            f.write(markdown)
+            
+        print(f"文章《{title}》保存成功")
+        
+    except Exception as e:
+        print(f"处理文章时出错: {str(e)}")
+
+def main():
+    try:
+        articles = getAllArticle()
+        print("开始下载文章...")
+        for url in articles:
+            try:
+                downForArticle(url)
+            except Exception as e:
+                print(f"处理文章 {url} 时出错: {str(e)}")
+                continue
+    finally:
+        browser.quit()
+
+if __name__ == "__main__":
+    main()
