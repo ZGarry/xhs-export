@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书文章导出工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="card main-card">
+            <h1>
+                <i class="mdi mdi-notebook-outline"></i>
+                小红书文章导出工具
+            </h1>
+            
+            <div class="status-card">
+                <div class="card-header">
+                    <i class="mdi mdi-information"></i>
+                    执行状态
+                </div>
+                <div class="status-content" id="status-text"></div>
+            </div>
+            
+            <div class="progress-card">
+                <div class="card-header">
+                    <i class="mdi mdi-progress-check"></i>
+                    进度
+                </div>
+                <div class="progress-item">
+                    <label>获取全部文章链接</label>
+                    <div class="progress">
+                        <div class="progress-bar" id="fetch-progress"></div>
+                        <span class="progress-text" id="fetch-progress-text">0%</span>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <label>下载进度</label>
+                    <div class="progress">
+                        <div class="progress-bar" id="download-progress"></div>
+                        <span class="progress-text" id="download-progress-text">0%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="start-btn" class="btn" onclick="startExport()">
+                <i class="mdi mdi-download"></i>
+                开始导出
+            </button>
+        </div>
+    </div>
+    
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <h2>
+                <i class="mdi mdi-account"></i>
+                登录确认
+            </h2>
+            <p>请确认是否已在浏览器中完成小红书登录？</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal('login-modal')">未登录</button>
+                <button class="btn" onclick="confirmLogin()">已登录</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="/eel.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
