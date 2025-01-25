@@ -6,24 +6,25 @@
     <title>小红书文章导出工具</title>
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23FF2442' d='M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19M11,7H13A2,2 0 0,1 15,9V15C15,16.11 14.1,17 13,17H11A2,2 0 0,1 9,15V9C9,7.89 9.9,7 11,7M11,9V15H13V9H11Z'/></svg>">
 </head>
 <body>
     <div class="container">
         <div class="card main-card">
             <h1>
-                <i class="mdi mdi-notebook-outline"></i>
+                <span class="logo">
+                    <i class="mdi mdi-notebook-outline"></i>
+                    <i class="mdi mdi-export-variant logo-overlay"></i>
+                </span>
                 小红书文章导出工具
             </h1>
             
-            <div class="status-card">
-                <div class="card-header">
-                    <i class="mdi mdi-information"></i>
-                    执行状态
-                </div>
-                <div class="status-content" id="status-text"></div>
-            </div>
-            
-            <div class="progress-card">
+            <button id="start-btn" class="btn" onclick="startExport()">
+                <i class="mdi mdi-download"></i>
+                开始导出
+            </button>
+
+            <div id="progress-section" class="progress-card hidden">
                 <div class="card-header">
                     <i class="mdi mdi-progress-check"></i>
                     进度
@@ -44,10 +45,13 @@
                 </div>
             </div>
             
-            <button id="start-btn" class="btn" onclick="startExport()">
-                <i class="mdi mdi-download"></i>
-                开始导出
-            </button>
+            <div id="log-section" class="status-card hidden">
+                <div class="card-header">
+                    <i class="mdi mdi-text-box-outline"></i>
+                    执行日志
+                </div>
+                <div class="status-content" id="status-text"></div>
+            </div>
         </div>
     </div>
     
@@ -57,7 +61,7 @@
                 <i class="mdi mdi-account"></i>
                 登录确认
             </h2>
-            <p>请确认是否已在浏览器中完成小红书登录？</p>
+            <p>请确认是否已在浏览器中完成小红书登录？（展开浏览器查看是否登录）</p>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeModal('login-modal')">未登录</button>
                 <button class="btn" onclick="confirmLogin()">已登录</button>

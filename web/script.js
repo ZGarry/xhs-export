@@ -74,11 +74,34 @@ function enableStartButton() {
     const startBtn = document.getElementById('start-btn');
     startBtn.disabled = false;
     startBtn.innerHTML = '<i class="mdi mdi-download"></i>开始导出';
+    
+    // 隐藏进度和日志区域
+    document.getElementById('progress-section').classList.remove('show');
+    document.getElementById('log-section').classList.remove('show');
+    setTimeout(() => {
+        document.getElementById('progress-section').classList.add('hidden');
+        document.getElementById('log-section').classList.add('hidden');
+    }, 300);
 }
 
 // 开始导出
 async function startExport() {
     disableStartButton();
+    
+    // 显示进度和日志区域
+    const progressSection = document.getElementById('progress-section');
+    const logSection = document.getElementById('log-section');
+    
+    progressSection.classList.remove('hidden');
+    logSection.classList.remove('hidden');
+    
+    // 触发重排以确保过渡动画生效
+    progressSection.offsetHeight;
+    logSection.offsetHeight;
+    
+    progressSection.classList.add('show');
+    logSection.classList.add('show');
+    
     startExportProcess();
 }
 
