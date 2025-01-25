@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 # 获取当前文件的路径
 current_file = os.path.abspath(__file__)
 
@@ -15,20 +16,24 @@ os.chdir(current_directory)
 
 # 打印当前工作目录
 print("当前工作目录:", os.getcwd())
-
+dir = r'C:\Users\Administrator\AppData\Local\Google\Chrome\User Data'
+# 配置 ChromeOptions
 chrome_options = Options()
-chrome_options.add_argument("--user-data-dir=D:\my")
-browser = webdriver.Chrome(chrome_options)
+chrome_options.add_argument(f"--user-data-dir={dir}")  # 替换为你的用户数据目录路径
+chrome_options.add_argument("--profile-directory=Default")  # 使用默认配置文件，如果需要其他配置文件可以修改
+# 创建 Chrome 浏览器实例
+service = Service(dir)
+browser = webdriver.Chrome(service=service, options=chrome_options)
+
+# 打开网页
+driver.get("https://www.google.com")
 
 
 def getAllArticle():
-
     # option.binary_location = r"C:\Program Files\Google\Chrome\Application/google.exe"  # binary_location属性指定Chrome启动文件
     # browser = webdriver.Chrome(option)
     browser.get(
-        'https://www.xiaohongshu.com/user/profile/60460e150000000001001ed4')
-
-    # 人工进行登录
+        'https://www.xiaohongshu.com/user/profile/563eaf6d9eb578045ba942b7')
 
 # 定义一个集合用来存储链接
 # 未登录，只能看到过去30篇笔记
